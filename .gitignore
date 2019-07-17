@@ -273,3 +273,4 @@ cache
 DEBUGcache
 backend/token.pickle
 client_secret.json
+images/

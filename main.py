@@ -17,6 +17,7 @@ class Downloader:
         self.downloading = False  # Are we downloading right now?
         self.empty = True  # Is the queue of files empty?
         self.connection = False  # Do we have an internet connection
+        self.webm = False
         self.silent = False  # Run the script silently
         self.debug = True
 
@@ -67,7 +68,8 @@ class Downloader:
         webmList = []
         for image in images:
             if "webm" in image:
-                webmList.append(image)
+                if self.webm:
+                    webmList.append(image)
                 images.remove(image)
 
         for video in webmList:
@@ -101,13 +103,14 @@ class Downloader:
         return None
 
     def menu(self):
-        # todo: Add option to not download webms
         query = input("Search Term: ")
         self.debugPrint("Querying Rule34...")
         totalImages = Rule34.totalImages(query)
         print("{} images expected!".format(totalImages))
         if self.response("Would you like to download?"):
-            print("Gathering Data from rule34, this may take around {0:.3g} seconds".format(0.002*totalImages))
+            if self.response("Would you like to download videos too?"):
+                self.webm = True
+            print("Gathering Data from rule34, this is predicted to take {0:.3g} seconds".format(0.002*totalImages))
             start = timer()
             images = Rule34.getImageURLS(query, singlePage=False)
             end = timer()
