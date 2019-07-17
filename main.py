@@ -106,21 +106,26 @@ class Downloader:
         query = input("Search Term: ")
         self.debugPrint("Querying Rule34...")
         totalImages = Rule34.totalImages(query)
-        print("{} images expected!".format(totalImages))
-        if self.response("Would you like to download?"):
-            if self.response("Would you like to download videos too?"):
-                self.webm = True
-            print("Gathering Data from rule34, this is predicted to take {0:.3g} seconds".format(0.002*totalImages))
-            start = timer()
-            images = Rule34.getImageURLS(query, singlePage=False)
-            end = timer()
-            total = end-start
-            print(total/totalImages)
-            if images is None:
-                print("No images found... this shouldnt happen")
-            else:
-                print("Download commencing")
-                self.download(images)
+        if totalImages  > 0:
+            print("{} images expected!".format(totalImages))
+            if self.response("Would you like to download?"):
+                if self.response("Would you like to download videos too?"):
+                    self.webm = True
+                print("Gathering Data from rule34, this is predicted to take {0:.3g} seconds".format(0.002*totalImages))
+                start = timer()
+                images = Rule34.getImageURLS(query, singlePage=False)
+                end = timer()
+                total = end-start
+                print(total/totalImages)
+                if images is None:
+                    print("No images found... this shouldnt happen")
+                else:
+                    print("Download commencing")
+                    self.download(images)
+        else:
+            print("No images found")
+            time.sleep(1)
+            self.menu()
 
         self.debugPrint("EOF")
         return True
