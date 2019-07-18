@@ -1,8 +1,8 @@
 """
 Name: Rule34 Downloader
 Author: Daniel Allen -- LordOfPolls - https://github.com/LordOfPolls
-Version: 0.01
-Date: 17/07/2019
+Version: 0.1.0
+Date: 18/07/2019
 """
 import rule34
 import time
@@ -23,8 +23,10 @@ class Downloader:
         self.connection = False  # Do we have an internet connection
         self.webm = False
         self.silent = False  # Run the script silently
-        self.debug = True
+        self.debug = False
         self.downloadLocation = None
+        self.tags = ""
+        self.errors = []  # list of errors used when downloading
 
         self.commandLineParse()  # process command line args if any
         self.checkConnection()  # validate that we have an internet connection
@@ -36,6 +38,18 @@ class Downloader:
     def commandLineParse(self):
         # todo: Parse command line arguments
         return None
+
+    def generateProgBar(self, numDownloaded, toDownload):
+        prog_bar_str = ''
+        progress_bar = 27
+        percentage = numDownloaded / toDownload
+
+        for i in range(progress_bar):
+            if (percentage < 1 / progress_bar * i):
+                prog_bar_str += '='
+            else:
+                prog_bar_str += u'█'
+        return prog_bar_str
 
     def response(self, prompt):
         """Wrapper for input() allowing the result to be normalised to a boolean"""
@@ -55,9 +69,6 @@ class Downloader:
 
     def checkConnection(self):
         try:
-            self.debugPrint("Checking Google for response")
-            urllib.request.urlopen('http://216.58.192.142', timeout=1)  # Check google for a response
-            self.debugPrint("Google responded")
             self.debugPrint("Checking Rule34 for response")
             urllib.request.urlopen('https://rule34.xxx/', timeout=1)  # Check rule34 for a response
             self.debugPrint("Rule34 responded")
@@ -80,28 +91,38 @@ class Downloader:
         for video in webmList:
             images.append(video)
 
+        newPathName = '_'.join(self.tags.split(" "))
+        newPathName = '/'.join([self.downloadLocation, newPathName])
+        if not os.path.isfile(newPathName):
+            os.mkdir(newPathName)
+
         numDownloaded = 0
         print("Downloaded {}/{}".format(numDownloaded, len(images)))
         average = 0
         ETA = 0
         for image in images:
             try:
-                name = "{}/{}".format(self.downloadLocation, image.split("/")[-1])
+                name = "{}/{}".format(newPathName, image.split("/")[-1])
 
                 statusString = """Downloading {Downloaded}/{ToDownload}
 File name: {name}
 Average Time: {average:.3g} seconds
-ETA: {ETA:.3g} seconds
+ETA: {ETA} seconds
+{ProgBar}
+
+{Errors}
                 """.format(Downloaded=numDownloaded, ToDownload=len(images),
                            name=name.replace(self.downloadLocation, self.downloadLocation.split("/")[-1]),
-                           average=average, ETA=ETA)
+                           average=average, ETA=round(ETA), ProgBar=self.generateProgBar(numDownloaded, len(images)),
+                           Errors='\n'.join(self.errors))
                 os.system("cls")
                 print(statusString)
                 if os.path.isfile(name):
                     print(image, "Already exists")
+                    images.remove(image)
                 else:
                     if "webm" in name:
-                        print("Downloading a webm... this will take longer")
+                        print("Downloading webms... this will take longer")
                     start = timer()
                     with urllib.request.urlopen(image) as f:
                         imageContent = f.read()
@@ -115,13 +136,21 @@ ETA: {ETA:.3g} seconds
                         ETA = average * (len(images) - numDownloaded)
 
             except Exception as e:
-                print("Skipping image due to", e)
+                self.errors.append("Skipped {} due to: {}".format(image.split("/")[-1], e))
+                images.remove(image)
         os.startfile(self.downloadLocation)
 
     def menu(self):
-        query = input("Search Term: ")
+        if not self.connection:
+            print("Error: Unable to connect to Rule34, quiting")
+            time.sleep(10)
+            exit(1)
+
+
+        self.tags = input("Search Term: ")
         self.debugPrint("Querying Rule34...")
-        totalImages = Rule34.totalImages(query)
+        totalImages = Rule34.totalImages(self.tags)
+
         if totalImages  > 0:
             print("{} images expected!".format(totalImages))
             if self.response("Would you like to download?"):
@@ -136,7 +165,7 @@ ETA: {ETA:.3g} seconds
                 self.downloadLocation = file_path
                 print("Gathering Data from rule34, this is predicted to take {0:.3g} seconds".format(0.002*totalImages))
                 start = timer()
-                images = Rule34.getImageURLS(query, singlePage=False)
+                images = Rule34.getImageURLS(self.tags, singlePage=False)
                 end = timer()
                 total = end-start
                 print(total/totalImages)
