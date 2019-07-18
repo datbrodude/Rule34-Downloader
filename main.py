@@ -9,7 +9,11 @@ import time
 import os
 from timeit import default_timer as timer
 import urllib.request
+import tkinter as tk
+from tkinter import filedialog
 
+root = tk.Tk()
+root.withdraw()
 Rule34 = rule34.Sync()
 
 class Downloader:
@@ -20,6 +24,7 @@ class Downloader:
         self.webm = False
         self.silent = False  # Run the script silently
         self.debug = True
+        self.downloadLocation = None
 
         self.commandLineParse()  # process command line args if any
         self.checkConnection()  # validate that we have an internet connection
@@ -64,7 +69,7 @@ class Downloader:
         # todo: Add progress bar
 
         times = []
-        print("Sorting list...")
+        self.debugPrint("Sorting list...")
         webmList = []
         for image in images:
             if "webm" in image:
@@ -77,9 +82,21 @@ class Downloader:
 
         numDownloaded = 0
         print("Downloaded {}/{}".format(numDownloaded, len(images)))
+        average = 0
+        ETA = 0
         for image in images:
             try:
-                name = "{}/{}".format("images", image.split("/")[-1])
+                name = "{}/{}".format(self.downloadLocation, image.split("/")[-1])
+
+                statusString = """Downloading {Downloaded}/{ToDownload}
+File name: {name}
+Average Time: {average:.3g} seconds
+ETA: {ETA:.3g} seconds
+                """.format(Downloaded=numDownloaded, ToDownload=len(images),
+                           name=name.replace(self.downloadLocation, self.downloadLocation.split("/")[-1]),
+                           average=average, ETA=ETA)
+                os.system("cls")
+                print(statusString)
                 if os.path.isfile(name):
                     print(image, "Already exists")
                 else:
@@ -96,11 +113,10 @@ class Downloader:
                         times = times[-30:]
                         average = (sum(times) / len(times))
                         ETA = average * (len(images) - numDownloaded)
-                        print("Downloaded {0}/{1} -- ETA: {2:.3g}s @ {3:.3g}s/image".format(numDownloaded, len(images),
-                                                                                            ETA, average))
+
             except Exception as e:
                 print("Skipping image due to", e)
-        return None
+        os.startfile(self.downloadLocation)
 
     def menu(self):
         query = input("Search Term: ")
@@ -111,6 +127,13 @@ class Downloader:
             if self.response("Would you like to download?"):
                 if self.response("Would you like to download videos too?"):
                     self.webm = True
+                for i in range(3):
+                    file_path = filedialog.askdirectory(title="Download location", mustexist=True)
+                    if file_path is None or file_path == "":
+                        print("No download location specified")
+                    else:
+                        break
+                self.downloadLocation = file_path
                 print("Gathering Data from rule34, this is predicted to take {0:.3g} seconds".format(0.002*totalImages))
                 start = timer()
                 images = Rule34.getImageURLS(query, singlePage=False)
