@@ -83,7 +83,7 @@ class Downloader:
         self.debugPrint("Sorting list...")
         webmList = []
         for image in images:
-            if "webm" in image:
+            if "webm" in image.file_url:
                 if self.webm:
                     webmList.append(image)
                 images.remove(image)
@@ -102,7 +102,7 @@ class Downloader:
         ETA = 0
         for image in images:
             try:
-                name = "{}/{}".format(newPathName, image.split("/")[-1])
+                name = "{}/{}".format(newPathName, image.file_url.split("/")[-1])
 
                 statusString = """Downloading {Downloaded}/{ToDownload}
 File name: {name}
@@ -124,7 +124,7 @@ ETA: {ETA} seconds
                     if "webm" in name:
                         print("Downloading webms... this will take longer")
                     start = timer()
-                    with urllib.request.urlopen(image) as f:
+                    with urllib.request.urlopen(image.file_url) as f:
                         imageContent = f.read()
                         with open(name, "wb") as f:
                             f.write(imageContent)
@@ -136,7 +136,7 @@ ETA: {ETA} seconds
                         ETA = average * (len(images) - numDownloaded)
 
             except Exception as e:
-                self.errors.append("Skipped {} due to: {}".format(image.split("/")[-1], e))
+                self.errors.append("Skipped {} due to: {}".format(image.file_url.split("/")[-1], e))
                 images.remove(image)
         os.startfile(self.downloadLocation)
 
@@ -165,7 +165,7 @@ ETA: {ETA} seconds
                 self.downloadLocation = file_path
                 print("Gathering Data from rule34, this is predicted to take {0:.3g} seconds".format(0.002*totalImages))
                 start = timer()
-                images = Rule34.getImageURLS(self.tags, singlePage=False)
+                images = Rule34.getImages(self.tags, singlePage=False)
                 end = timer()
                 total = end-start
                 print(total/totalImages)
