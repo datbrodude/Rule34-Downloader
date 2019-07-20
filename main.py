@@ -93,7 +93,7 @@ class Downloader:
 
         newPathName = '_'.join(self.tags.split(" "))
         newPathName = '/'.join([self.downloadLocation, newPathName])
-        if not os.path.isfile(newPathName):
+        if not os.path.isdir(newPathName):
             os.mkdir(newPathName)
 
         numDownloaded = 0
