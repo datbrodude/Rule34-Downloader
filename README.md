@@ -18,6 +18,7 @@ Windows Executable: https://github.com/LordOfPolls/Rule34-Downloader/releases/do
 - Navigate to the root directory (the one with ``requirements.txt`` in)
 - Run ``pip install -r requirements.txt``
   - This will install all dependencies
+  
 **then**
 
 - Run main.py / main.exe and follow on screen instructions
