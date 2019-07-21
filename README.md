@@ -10,11 +10,17 @@ Downloads every image it can find on Rule34 that matches the tags you search for
 
 ## How do i use it?
 
+Windows Executable: https://github.com/LordOfPolls/Rule34-Downloader/releases/download/V1.0.0/main.exe
+
+**Or**
+
 - Clone the repository
 - Navigate to the root directory (the one with ``requirements.txt`` in)
 - Run ``pip install -r requirements.txt``
   - This will install all dependencies
-- Run main.py and follow on screen instructions
+**then**
+
+- Run main.py / main.exe and follow on screen instructions
 - Enjoy your excessive amount of porn
 
 ### FAQ
