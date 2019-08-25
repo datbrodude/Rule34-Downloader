@@ -39,7 +39,8 @@ Windows Executable: https://github.com/LordOfPolls/Rule34-Downloader/releases/do
 
 **Can i download a specific amount of images?**
 
->Not yet...
+> Yes, when running the program will ask you if you want to limit how
+> many images are downloaded
 
 **Whats this ``cachedsearch.r34`` file?**
 

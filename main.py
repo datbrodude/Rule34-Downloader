@@ -27,6 +27,7 @@ class Downloader:
         self.downloadLocation = None
         self.tags = ""
         self.errors = []  # list of errors used when downloading
+        self.limit = 0  # Limits how many images to download
 
         self.commandLineParse()  # process command line args if any
         self.checkConnection()  # validate that we have an internet connection
@@ -65,7 +66,6 @@ class Downloader:
         print("Too many invalid responses, quiting")
         time.sleep(1)
         exit(0)
-
 
     def checkConnection(self):
         try:
@@ -146,26 +146,38 @@ ETA: {ETA} seconds
             time.sleep(10)
             exit(1)
 
-
         self.tags = input("Search Term: ")
         self.debugPrint("Querying Rule34...")
         totalImages = Rule34.totalImages(self.tags)
 
-        if totalImages  > 0:
+        if totalImages > 0:
             print("{} images expected!".format(totalImages))
             if self.response("Would you like to download?"):
                 if self.response("Would you like to download videos too?"):
                     self.webm = True
+
+                if self.response("Would you like to limit how many images are downloaded?"):
+                    try:
+                        self.limit = int(input("Image Limit: "))
+
+                    except ValueError:
+                        print("Error, integer expected, try again")
+                else:
+                    self.limit = totalImages
+                file_path = None
                 for i in range(3):
                     file_path = filedialog.askdirectory(title="Download location", mustexist=True)
                     if file_path is None or file_path == "":
                         print("No download location specified")
                     else:
                         break
+                if file_path is None:
+                    exit(1)
                 self.downloadLocation = file_path
                 print("Gathering Data from rule34, this is predicted to take {0:.3g} seconds".format(0.002*totalImages))
                 start = timer()
                 images = Rule34.getImages(self.tags, singlePage=False)
+                images = images[:self.limit]
                 end = timer()
                 total = end-start
                 print(total/totalImages)
