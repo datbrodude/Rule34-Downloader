@@ -90,11 +90,13 @@ class Downloader:
 
         for video in webmList:
             images.append(video)
-
-        newPathName = '_'.join(self.tags.split(" "))
-        newPathName = '/'.join([self.downloadLocation, newPathName])
-        if not os.path.isdir(newPathName):
-            os.mkdir(newPathName)
+        if self.response("Create new folder?"):
+            newPathName = '_'.join(self.tags.split(" "))
+            newPathName = '/'.join([self.downloadLocation, newPathName])
+            if not os.path.isdir(newPathName):
+                os.mkdir(newPathName)
+        else:
+            newPathName = self.downloadLocation
 
         numDownloaded = 0
         print("Downloaded {}/{}".format(numDownloaded, len(images)))
